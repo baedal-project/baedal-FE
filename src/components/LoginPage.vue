@@ -17,6 +17,7 @@
         required
     ></v-text-field>
     <v-btn color="white" dark class="mb-2" @click="login()">로그인</v-btn>
+    <v-btn color="white" dark class="mb-2" href="/signup">회원가입</v-btn>
   </v-form>
 </template>
 
@@ -53,7 +54,7 @@ export default {
         if (response.data.success) {
           this.cookies.set('accessToken', response.headers.get('authorization'), response.headers.get('authorization').expiresIn);
           this.cookies.set('refreshToken', response.headers.get('refresh-token'), response.headers.get('refresh-token').expiresIn);
-          this.$router.go('/stores');
+          this.$router.push('/stores');
         } else {
           alert('로그인 실패');
         }
