@@ -8,7 +8,8 @@
       <v-toolbar-items class="hidden-sm-and-down">
         <v-btn flat href="/orders">Orders</v-btn>
         <v-btn flat href="/stores">Stores</v-btn>
-        <v-btn flat href="/login">Login</v-btn>
+        <v-btn v-if="this.cookies.get('accessToken') == null" flat href="/login">Login</v-btn>
+        <v-btn v-if="this.cookies.get('accessToken') != null" flat @click="logout">Logout</v-btn>
       </v-toolbar-items>
     </v-toolbar>
     <v-main>
@@ -20,7 +21,27 @@
 </template>
 
 <script>
+import { useCookies } from "vue3-cookies";
 export default {
-  name: 'App'
+  name: 'App',
+  setup() {
+    const { cookies } = useCookies();
+    return { cookies };
+  },
+  created() {
+    if (this.cookies.get('accessToken') == null) {
+      this.$router.push('/login');
+    } else {
+      this.$router.push('/stores');
+
+    }
+  },
+  methods: {
+    logout() {
+      this.cookies.remove('accessToken');
+      this.cookies.remove('refreshToken');
+      this.$router.go('/login');
+    }
+  }
 }
 </script>
