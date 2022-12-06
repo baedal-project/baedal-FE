@@ -176,11 +176,16 @@
 
 <script>
 import axios from "axios";
+import { useCookies } from "vue3-cookies";
 
 const API_URL = import.meta.env.VITE_API_URL;
 
 export default {
   name: "OrdersPage",
+  setup() {
+    const { cookies } = useCookies();
+    return { cookies };
+  },
   data: () => ({
     dialog: false,
     orderDialog: false,
@@ -206,7 +211,12 @@ export default {
   methods: {
     getOrdersByPage() {
       axios
-          .get(API_URL + "/api/v2/orders?page=" + (this.page - 1))
+          .get(API_URL + "/api/v2/orders?page=" + (this.page - 1), {
+            headers: {
+              "Authorization": this.cookies.get("accessToken"),
+              "Refresh-Token": this.cookies.get("refreshToken")
+            }
+          })
           .then(response => {
             console.log(response);
             this.orders = response.data.data[0];
@@ -223,7 +233,12 @@ export default {
     },
     addOrder() {
       axios
-          .post(API_URL + "/api/orders", this.order)
+          .post(API_URL + "/api/orders", this.order,  {
+            headers: {
+              "Authorization": this.cookies.get("accessToken"),
+              "Refresh-Token": this.cookies.get("refreshToken")
+            }
+          })
           .then(response => {
             console.log(response.data);
             this.orders = response.data.data.content;
@@ -234,7 +249,12 @@ export default {
     },
     getOrderDetail(orderId) {
       axios
-          .get(API_URL + "/api/orders/" + orderId)
+          .get(API_URL + "/api/orders/" + orderId,  {
+            headers: {
+              "Authorization": this.cookies.get("accessToken"),
+              "Refresh-Token": this.cookies.get("refreshToken")
+            }
+          })
           .then(response => {
             console.log(response);
             this.orderDetail = response.data.data;
@@ -247,7 +267,12 @@ export default {
   },
   mounted() {
     axios
-        .get(API_URL + "/api/v2/orders?page=" + --this.page)
+        .get(API_URL + "/api/v2/orders?page=" + --this.page,  {
+          headers: {
+            "Authorization": this.cookies.get("accessToken"),
+            "Refresh-Token": this.cookies.get("refreshToken")
+          }
+        })
         .then(response => {
           console.log(response.data);
           this.orders = response.data.data[0];

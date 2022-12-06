@@ -47,6 +47,8 @@
 
 <script>
 import axios from "axios";
+import {useCookies} from "vue3-cookies";
+
 const API_URL = import.meta.env.VITE_API_URL;
 
 export default {
@@ -58,17 +60,26 @@ export default {
       length: 0
     };
   },
+  setup() {
+    const {cookies} = useCookies();
+    return {cookies};
+  },
   methods: {
     getStoresByPage() {
       axios
-        .get(API_URL + "/api/stores?page=" + (this.page - 1))
-        .then(response => {
-          console.log(response.data);
-          this.stores = response.data.data.content;
-        })
-        .catch(error => {
-          console.log(error);
-        });
+          .get(API_URL + "/api/stores?page=" + (this.page - 1), {
+            headers: {
+              "Authorization": this.cookies.get("accessToken"),
+              "Refresh-Token": this.cookies.get("refreshToken")
+            }
+          })
+          .then(response => {
+            console.log(response.data);
+            this.stores = response.data.data.content;
+          })
+          .catch(error => {
+            console.log(error);
+          });
     },
     nextPage() {
       this.getStoresByPage(this.page);
@@ -80,15 +91,20 @@ export default {
   },
   mounted() {
     axios
-      .get( API_URL+ "/api/stores?page=" + --this.page)
-      .then(response => {
-        console.log(response.data);
-        this.stores = response.data.data.content;
-        this.length = response.data.data.totalPages;
-      })
-      .catch(error => {
-        console.log(error);
-      })
+        .get(API_URL + "/api/stores?page=" + --this.page, {
+          headers: {
+            "Authorization": this.cookies.get("accessToken"),
+            "Refresh-Token": this.cookies.get("refreshToken")
+          }
+        })
+        .then(response => {
+          console.log(response.data);
+          this.stores = response.data.data.content;
+          this.length = response.data.data.totalPages;
+        })
+        .catch(error => {
+          console.log(error);
+        })
   },
 }
 </script>
