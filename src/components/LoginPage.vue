@@ -49,11 +49,10 @@ export default {
         password: this.password,
         role: this.role
       }).then((response) => {
-        console.log(response.data)
-        console.log(response.headers)
         if (response.data.success) {
           this.cookies.set('accessToken', response.headers.get('authorization'), response.headers.get('authorization').expiresIn);
           this.cookies.set('refreshToken', response.headers.get('refresh-token'), response.headers.get('refresh-token').expiresIn);
+          this.cookies.set('memberId', response.data.data.id);
           this.$router.push('/stores');
         } else {
           alert('로그인 실패');

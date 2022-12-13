@@ -64,15 +64,18 @@
           <v-container>
             <v-row>
               <v-col cols="12" sm="6" md="4">
-                <v-text-field
+                <v-select
+                    label="Store"
                     v-model="order.storeId"
-                    label="Store ID"
-                ></v-text-field>
+                  :items="storeNum"
+                  max-height="10"
+                >
+                </v-select>
               </v-col>
               <v-col cols="12" sm="6" md="4">
                 <v-text-field
                     v-model="order.memberId"
-                    label="Member ID"
+                    label="MemberId"
                 ></v-text-field>
               </v-col>
 
@@ -177,7 +180,6 @@
 <script>
 import axios from "axios";
 import { useCookies } from "vue3-cookies";
-
 const API_URL = import.meta.env.VITE_API_URL;
 
 export default {
@@ -198,7 +200,10 @@ export default {
     orders: [],
     api_version: '',
     page: 1,
+    storePage: 1,
     length: 0,
+    storeName: [],
+    storeNum: [],
     itemId: [1, 2, 3],
     amount: [1, 2, 3],
     orderDetail: {
@@ -206,12 +211,15 @@ export default {
       orderDate: '',
       orderHasItems: [],
       memberId: '',
-    }
+    },
+    memberId: '',
+    infiniteScroll: true
   }),
   methods: {
     getOrdersByPage() {
+      console.log(this.page);
       axios
-          .get(API_URL + "/api/v2/orders?page=" + (this.page - 1), {
+          .get(API_URL + "/api/v3/orders?page=" + (this.page - 1), {
             headers: {
               "Authorization": this.cookies.get("accessToken"),
               "Refresh-Token": this.cookies.get("refreshToken")
@@ -220,6 +228,26 @@ export default {
           .then(response => {
             console.log(response);
             this.orders = response.data.data[0];
+            this.length = response.data.data[1].pages;
+          })
+          .catch(error => {
+            console.log(error);
+          });
+    },
+    getStoresByPage( storePage ) {
+      axios
+          .post(API_URL + "/api/v2/search?size=30&page="+ (storePage - 1), {memberId: this.memberId}, {
+            headers: {
+              "Authorization": this.cookies.get("accessToken"),
+              "Refresh-Token": this.cookies.get("refreshToken")
+            }
+          })
+          .then(response => {
+            console.log(response.data);
+            response.data.data.forEach(store => {
+              this.storeName.push(store.name);
+              this.storeNum.push(store.storeId);
+            })
           })
           .catch(error => {
             console.log(error);
@@ -233,7 +261,7 @@ export default {
     },
     addOrder() {
       axios
-          .post(API_URL + "/api/orders", this.order,  {
+          .post(API_URL + "/api/v2/orders", this.order,  {
             headers: {
               "Authorization": this.cookies.get("accessToken"),
               "Refresh-Token": this.cookies.get("refreshToken")
@@ -249,39 +277,64 @@ export default {
     },
     getOrderDetail(orderId) {
       axios
-          .get(API_URL + "/api/orders/" + orderId,  {
-            headers: {
-              "Authorization": this.cookies.get("accessToken"),
-              "Refresh-Token": this.cookies.get("refreshToken")
-            }
-          })
-          .then(response => {
-            console.log(response);
-            this.orderDetail = response.data.data;
-            this.orderDialog = true;
-          })
-          .catch(error => {
-            console.log(error);
-          });
-    }
-  },
-  mounted() {
-    axios
-        .get(API_URL + "/api/v2/orders?page=" + --this.page,  {
+        .get(API_URL + "/api/orders/" + orderId,  {
           headers: {
             "Authorization": this.cookies.get("accessToken"),
             "Refresh-Token": this.cookies.get("refreshToken")
           }
         })
         .then(response => {
-          console.log(response.data);
-          this.orders = response.data.data[0];
-          this.length = response.data.data[1].pages;
+          console.log(response);
+          this.orderDetail = response.data.data;
+          this.orderDialog = true;
         })
         .catch(error => {
           console.log(error);
-        })
+        });
+    }
   },
+  mounted() {
+    this.memberId = this.cookies.get("memberId");
+    this.getStoresByPage(this.storePage);
+    this.getOrdersByPage();
+  }
+  // mounted() {
+  //   this.memberId = this.cookies.get("memberId");
+  //   axios
+  //       .get(API_URL + "/api/v2/orders?page=" + --this.page,  {
+  //         headers: {
+  //           "Authorization": this.cookies.get("accessToken"),
+  //           "Refresh-Token": this.cookies.get("refreshToken")
+  //         }
+  //       })
+  //       .then(response => {
+  //         console.log(response.data);
+  //         this.orders = response.data.data[0];
+  //         this.length = response.data.data[1].pages;
+  //
+  //       })
+  //       .catch(error => {
+  //         console.log(error);
+  //       })
+  //
+  //   axios
+  //       .post(API_URL + "/api/v2/search?size=50&page="+ (this.storePage - 1), {memberId: this.memberId.toString()}, {
+  //         headers: {
+  //           "Authorization": this.cookies.get("accessToken"),
+  //           "Refresh-Token": this.cookies.get("refreshToken")
+  //         }
+  //       })
+  //       .then(response => {
+  //         console.log(response.data);
+  //         response.data.data.forEach(store => {
+  //           this.storeName.push(store.name);
+  //         })
+  //         console.log(this.storeName);
+  //       })
+  //       .catch(error => {
+  //         console.log(error);
+  //       })
+  // },
 }
 </script>
 
