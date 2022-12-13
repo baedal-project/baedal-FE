@@ -39,6 +39,7 @@ export default {
     logout() {
       this.cookies.remove('accessToken');
       this.cookies.remove('refreshToken');
+      this.cookies.remove('memberId');
       this.$router.push('/login');
     }
   }
